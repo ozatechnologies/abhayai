@@ -24,10 +24,10 @@ function useHotKey() {
   const chatStore = useChatStore();
 
   useEffect(() => {
-    const onKeyDown = (e) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey || e.altKey || e.ctrlKey) {
         const n = chatStore.sessions.length;
-        const limit = (x) => (x + n) % n;
+        const limit = (x: number) => (x + n) % n;
         const i = chatStore.currentSessionIndex;
         if (e.key === "ArrowUp") {
           chatStore.selectSession(limit(i - 1));
@@ -48,7 +48,7 @@ function useDragSideBar() {
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (Date.now() < lastUpdateTime.current + 50) {
       return;
     }
@@ -64,7 +64,7 @@ function useDragSideBar() {
     window.removeEventListener("mouseup", handleMouseUp);
   };
 
-  const onDragMouseDown = (e) => {
+  const onDragMouseDown = (e: MouseEvent) => {
     startX.current = e.clientX;
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -89,7 +89,7 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(props) {
+export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();
   const { onDragMouseDown, shouldNarrow } = useDragSideBar();
   const navigate = useNavigate();
@@ -100,7 +100,7 @@ export function SideBar(props) {
   return (
     <div
       className={`${styles.sidebar} ${props.className} ${
-        shouldNarrow && styles["narrow-sidebar"]
+        shouldNarrow ? styles["narrow-sidebar"] : ""
       }`}
     >
       <div className={styles["sidebar-header"]}>

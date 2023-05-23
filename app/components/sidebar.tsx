@@ -21,7 +21,7 @@ import {
   NARROW_SIDEBAR_WIDTH,
   Path,
   REPO_URL,
-} from "../constant";
+}
 
 import { Link, useNavigate } from "react-router-dom";
 import { useMobileScreen } from "../utils";
@@ -97,7 +97,7 @@ function useDragSideBar() {
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {
-    onDragMouseDown,
+    onDragMouseDown,on
     shouldNarrow,
   };
 }

@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
-
-import styles from "./home.module.scss";
-
+import { Link, useNavigate } from "react-router-dom";
+import dynamic from "next/dynamic";
+import Locale from "../locales";
+import { useAppConfig, useChatStore } from "../store";
+import { useMobileScreen } from "../utils";
+import { showToast } from "./ui-lib";
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
@@ -9,23 +12,7 @@ import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
-
-import Locale from "../locales";
-
-import { useAppConfig, useChatStore } from "../store";
-
-import {
-  MAX_SIDEBAR_WIDTH,
-  MIN_SIDEBAR_WIDTH,
-  NARROW_SIDEBAR_WIDTH,
-  Path,
-}
-
-
-import { Link, useNavigate } from "react-router-dom";
-import { useMobileScreen } from "../utils";
-import dynamic from "next/dynamic";
-import { showToast } from "./ui-lib";
+import styles from "./home.module.scss";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -50,7 +37,7 @@ function useHotKey() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  });
+  }, [chatStore]);
 }
 
 function useDragSideBar() {
@@ -83,9 +70,9 @@ function useDragSideBar() {
     window.addEventListener("mousemove", handleMouseMove.current);
     window.addEventListener("mouseup", handleMouseUp.current);
   };
+
   const isMobileScreen = useMobileScreen();
-  const shouldNarrow =
-    !isMobileScreen && config.sidebarWidth < MIN_SIDEBAR_WIDTH;
+  const shouldNarrow = !isMobileScreen && config.sidebarWidth < MIN_SIDEBAR_WIDTH;
 
   useEffect(() => {
     const barWidth = shouldNarrow
@@ -96,7 +83,6 @@ function useDragSideBar() {
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {
-   
     shouldNarrow,
   };
 }
@@ -104,7 +90,6 @@ function useDragSideBar() {
 export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();
 
-  // drag side bar
   const { onDragMouseDown, shouldNarrow } = useDragSideBar();
   const navigate = useNavigate();
   const config = useAppConfig();
@@ -118,13 +103,10 @@ export function SideBar(props: { className?: string }) {
       }`}
     >
       <div className={styles["sidebar-header"]}>
-        <div className={styles["sidebar-title"]}>AbhayAI SllIam 2.7 LLM Syst and oAi</div>
-        <div className={styles["sidebar-sub-title"]}>
-          ©SYST 
+        <div className={styles["sidebar-title"]}>
+          AbhayAI SllIam 2.7 LLM Syst and oAi
         </div>
-        <div className={styles["sidebar-logo"] + " no-dark"}>
-          <ChatGptIcon />
-        </div>
+        <div className={styles["sidebar-sub-title"]}>©SYST</div>
       </div>
 
       <div className={styles["sidebar-header-bar"]}>
@@ -172,7 +154,6 @@ export function SideBar(props: { className?: string }) {
               <IconButton icon={<SettingsIcon />} shadow />
             </Link>
           </div>
-
         </div>
         <div>
           <IconButton

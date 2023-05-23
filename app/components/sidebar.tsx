@@ -20,8 +20,8 @@ import {
   MIN_SIDEBAR_WIDTH,
   NARROW_SIDEBAR_WIDTH,
   Path,
-  REPO_URL,
 }
+
 
 import { Link, useNavigate } from "react-router-dom";
 import { useMobileScreen } from "../utils";

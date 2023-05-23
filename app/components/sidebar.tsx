@@ -7,6 +7,7 @@ import { useMobileScreen } from "../utils";
 import { showToast } from "./ui-lib";
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
+import GithubIcon from "../icons/github.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
@@ -16,9 +17,6 @@ import styles from "./home.module.scss";
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
 });
-
-const MIN_SIDEBAR_WIDTH = 200;
-const MAX_SIDEBAR_WIDTH = 500;
 
 function useHotKey() {
   const chatStore = useChatStore();
@@ -43,6 +41,8 @@ function useHotKey() {
 }
 
 function useDragSideBar() {
+  const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
+
   const config = useAppConfig();
   const startX = useRef(0);
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
@@ -54,7 +54,7 @@ function useDragSideBar() {
     }
     lastUpdateTime.current = Date.now();
     const d = e.clientX - startX.current;
-    const nextWidth = Math.min(MAX_SIDEBAR_WIDTH, startDragWidth.current + d);
+    const nextWidth = limit(startDragWidth.current + d);
     config.update((config) => (config.sidebarWidth = nextWidth));
   };
 
@@ -64,7 +64,7 @@ function useDragSideBar() {
     window.removeEventListener("mouseup", handleMouseUp);
   };
 
-  const onDragMouseDown = (e: MouseEvent) => {
+  const onDragMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     startX.current = e.clientX;
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -73,12 +73,12 @@ function useDragSideBar() {
 
   const isMobileScreen = useMobileScreen();
   const shouldNarrow =
-    !isMobileScreen && config.sidebarWidth < MIN_SIDEBAR_WIDTH;
+    !isMobileScreen && config.sidebarWidth < MAX_SIDEBAR_WIDTH;
 
   useEffect(() => {
     const barWidth = shouldNarrow
       ? MIN_SIDEBAR_WIDTH
-      : Math.min(MAX_SIDEBAR_WIDTH, config.sidebarWidth ?? 300);
+      : limit(config.sidebarWidth ?? 300);
     const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
     document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
@@ -97,10 +97,25 @@ export function SideBar(props: { className?: string }) {
 
   useHotKey();
 
+  const handleDeleteChat = () => {
+    if (confirm(Locale.Home.DeleteChat)) {
+      chatStore.deleteSession(chatStore.currentSessionIndex);
+    }
+  };
+
+  const handleNewChat = () => {
+    if (config.dontShowMaskSplashScreen) {
+      chatStore.newSession();
+      navigate("/chat");
+    } else {
+      navigate("/new-chat", { state: { fromHome: true } });
+    }
+  };
+
   return (
     <div
       className={`${styles.sidebar} ${props.className} ${
-        shouldNarrow ? styles["narrow-sidebar"] : ""
+        shouldNarrow && styles["narrow-sidebar"]
       }`}
     >
       <div className={styles["sidebar-header"]}>
@@ -113,7 +128,7 @@ export function SideBar(props: { className?: string }) {
           icon={<MaskIcon />}
           text={shouldNarrow ? undefined : Locale.Mask.Name}
           className={styles["sidebar-bar-button"]}
-          onClick={() => navigate(Path.NewChat, { state: { fromHome: true } })}
+          onClick={handleNewChat}
           shadow
         />
         <IconButton
@@ -129,7 +144,7 @@ export function SideBar(props: { className?: string }) {
         className={styles["sidebar-body"]}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            navigate(Path.Home);
+            navigate("/");
           }
         }}
       >
@@ -137,20 +152,23 @@ export function SideBar(props: { className?: string }) {
       </div>
 
       <div className={styles["sidebar-tail"]}>
-        <div className={`${styles["sidebar-actions"]} ${styles.mobile}`}>
-          <IconButton
-            icon={<CloseIcon />}
-            onClick={() => {
-              if (confirm(Locale.Home.DeleteChat)) {
-                chatStore.deleteSession(chatStore.currentSessionIndex);
-              }
-            }}
-          />
+        <div className={styles["sidebar-actions"]}>
+          <div className={`${styles["sidebar-action"]} ${styles.mobile}`}>
+            <IconButton icon={<CloseIcon />} onClick={handleDeleteChat} />
+          </div>
+          <div className={styles["sidebar-action"]}>
+            <Link to="/settings">
+              <IconButton icon={<SettingsIcon />} shadow />
+            </Link>
+          </div>
         </div>
-        <div className={styles["sidebar-action"]}>
-          <Link to={Path.Settings}>
-            <IconButton icon={<SettingsIcon />} shadow />
-          </Link>
+        <div>
+          <IconButton
+            icon={<AddIcon />}
+            text={shouldNarrow ? undefined : Locale.Home.NewChat}
+            onClick={handleNewChat}
+            shadow
+          />
         </div>
       </div>
 

@@ -18,6 +18,8 @@ const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
 });
 
+const MAX_SIDEBAR_WIDTH = 500; // Adjust the value as per your requirement
+
 function useHotKey() {
   const chatStore = useChatStore();
 
@@ -83,6 +85,7 @@ function useDragSideBar() {
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {
+    onDragMouseDown,
     shouldNarrow,
   };
 }

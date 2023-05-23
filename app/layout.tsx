@@ -7,19 +7,19 @@ import { getBuildConfig } from "./config/build";
 const buildConfig = getBuildConfig();
 
 export const metadata = {
-  title: "ChatGPT Next Web",
-  description: "Your personal ChatGPT Chat Bot.",
+  title: "AbhayAI",
+  description: "Your personal Chat Bot.",
   viewport: {
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
   },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#151515" },
-  ],
+ themeColor: [
+  { media: "(prefers-color-scheme: light)", color: "#FFD3A5" },
+  { media: "(prefers-color-scheme: dark)", color: "#FD6585" },
+],
   appleWebApp: {
-    title: "ChatGPT Next Web",
+    title: "AbhayAI",
     statusBarStyle: "default",
   },
 };

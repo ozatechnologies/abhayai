@@ -97,7 +97,7 @@ function useDragSideBar() {
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {
-    onDragMouseDown,on
+   
     shouldNarrow,
   };
 }

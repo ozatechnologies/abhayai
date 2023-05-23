@@ -18,6 +18,9 @@ const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
 });
 
+const MAX_SIDEBAR_WIDTH = 400; // Placeholder value, replace it with the actual maximum sidebar width
+const MIN_SIDEBAR_WIDTH = 200; // Placeholder value, replace it with the actual minimum sidebar width
+
 function useHotKey() {
   const chatStore = useChatStore();
 
@@ -80,7 +83,10 @@ function useDragSideBar() {
       ? MIN_SIDEBAR_WIDTH
       : limit(config.sidebarWidth ?? 300);
     const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
-    document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      sideBarWidth
+    );
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {

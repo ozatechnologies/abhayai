@@ -111,6 +111,10 @@ export function SideBar(props: { className?: string }) {
     window.open("https://docchaingpt.streamlit.app/", "_blank");
   };
 
+  const redirectToAutoGPT = () => {
+    window.location.href = "https://yaaagia2.vercel.app/en";
+  };
+
   return (
     <div
       className={`${styles.sidebar} ${props.className} ${
@@ -195,6 +199,10 @@ export function SideBar(props: { className?: string }) {
         className={styles["sidebar-drag"]}
         onMouseDown={onDragMouseDown}
       ></div>
+
+      <div className={styles["autogpt-button"]}>
+        <button onClick={redirectToAutoGPT}>AutoGPT</button>
+      </div>
     </div>
   );
 }

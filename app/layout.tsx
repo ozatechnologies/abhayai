@@ -8,15 +8,15 @@ const buildConfig = getBuildConfig();
 
 export const metadata = {
   title: "AvanaAI",
-  description: "Your personal abhay Chat Bot.",
+  description: "Your personal Avana Chat Bot.",
   viewport: {
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
   },
   themeColor: [
-  { media: "(prefers-color-scheme: light)", color: "linear-gradient(90deg, #a799ff, #ffbddc)" },
-  { media: "(prefers-color-scheme: dark)", color: "linear-gradient(90deg, #a799ff, #ffbddc)" },
+    { media: "(prefers-color-scheme: light)", color: "#a799ff" },
+    { media: "(prefers-color-scheme: dark)", color: "#ffbddc" },
   ],
   appleWebApp: {
     title: "AvanaAI",
@@ -24,17 +24,13 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <meta name="version" content={buildConfig.commitId} />
-        <link rel="manifest" href="/site.webmanifest"></link>
-        <script src="/serviceWorkerRegister.js" defer></script>
+        <link rel="manifest" href="/site.webmanifest" />
+        <script src="/serviceWorkerRegister.js" defer />
       </head>
       <body>{children}</body>
     </html>

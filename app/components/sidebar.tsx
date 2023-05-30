@@ -43,7 +43,7 @@ function useHotKey() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  });
+  }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
 }
 
 function useDragSideBar() {
@@ -137,7 +137,6 @@ export function SideBar(props) {
           onClick={() => showToast(Locale.WIP)}
           shadow
         />
-        {/* New button */}
         <IconButton
           icon={<span>DocChain GPT</span>}
           className={styles["sidebar-bar-button"]}

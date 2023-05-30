@@ -7,7 +7,7 @@ import { getBuildConfig } from "./config/build";
 const buildConfig = getBuildConfig();
 
 export const metadata = {
-  title: "ABHAYAI",
+  title: "AvanaAI",
   description: "Your personal abhay Chat Bot.",
   viewport: {
     width: "device-width",
@@ -15,11 +15,11 @@ export const metadata = {
     maximumScale: 1,
   },
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#151515" },
+  { media: "(prefers-color-scheme: light)", color: "linear-gradient(90deg, #a799ff, #ffbddc)" },
+  { media: "(prefers-color-scheme: dark)", color: "linear-gradient(90deg, #a799ff, #ffbddc)" },
   ],
   appleWebApp: {
-    title: "AbhayAI",
+    title: "AvanaAI",
     statusBarStyle: "default",
   },
 };

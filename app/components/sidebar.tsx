@@ -117,7 +117,7 @@ export function SideBar(props: { className?: string }) {
       }`}
     >
       <div className={styles["sidebar-header"]}>
-        <div className={styles["sidebar-title"]}>AvanaI</div>
+        <div className={styles["sidebar-title"]}>Avana</div>
         <div className={styles["sidebar-sub-title"]}>
           SYST
         </div>

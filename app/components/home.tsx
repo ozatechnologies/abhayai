@@ -16,7 +16,7 @@ import { Path, SlotID } from "../constant";
 import { ErrorBoundary } from "./error";
 
 import {
-  HashRouter as Router,
+  BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
@@ -123,11 +123,11 @@ function Screen() {
 
       <div className={styles["window-content"]} id={SlotID.AppBody}>
         <Routes>
-          <Route path={Path.Home} element={<Chat />} />
-          <Route path={Path.NewChat} element={<NewChat />} />
-          <Route path={Path.Masks} element={<MaskPage />} />
-          <Route path={Path.Chat} element={<Chat />} />
-          <Route path={Path.Settings} element={<Settings />} />
+          <Route path={Path.Home()} element={<Chat />} />
+          <Route path={Path.NewChat()} element={<NewChat />} />
+          <Route path={Path.Masks()} element={<MaskPage />} />
+          <Route path={Path.Chat()} element={<Chat />} />
+          <Route path={Path.Settings()} element={<Settings />} />
         </Routes>
       </div>
     </div>

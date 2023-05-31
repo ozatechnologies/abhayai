@@ -110,7 +110,11 @@ export function SideBar(props: { className?: string }) {
   const openDocChainGPT = () => {
     window.open("https://docchaingpt.streamlit.app/", "_blank");
   };
-
+  
+  const openPrompts = () => {
+    window.open("https://flowgpt.com/", "_blank");
+  };
+  
   const redirectToAutoGPT = () => {
     window.location.href = "https://yaaagia2.vercel.app/en";
   };

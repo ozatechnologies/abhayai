@@ -151,6 +151,12 @@ export function SideBar(props: { className?: string }) {
           onClick={openDocChainGPT}
           shadow
         />
+        <IconButton
+          icon={<span>Prompts</span>}
+          className={styles["sidebar-bar-button"]}
+          onClick={openPrompts}
+          shadow
+        />
       </div>
 
       <div

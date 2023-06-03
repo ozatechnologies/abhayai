@@ -28,10 +28,10 @@ function useHotKey() {
   const chatStore = useChatStore();
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (e) => {
       if (e.metaKey || e.altKey || e.ctrlKey) {
         const n = chatStore.sessions.length;
-        const limit = (x: number) => (x + n) % n;
+        const limit = (x) => (x + n) % n;
         const i = chatStore.currentSessionIndex;
         if (e.key === "ArrowUp") {
           chatStore.selectSession(limit(i - 1));
@@ -47,14 +47,14 @@ function useHotKey() {
 }
 
 function useDragSideBar() {
-  const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
+  const limit = (x) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
   const config = useAppConfig();
   const startX = useRef(0);
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = useRef((e: MouseEvent) => {
+  const handleMouseMove = useRef((e) => {
     if (Date.now() < lastUpdateTime.current + 50) {
       return;
     }
@@ -70,7 +70,7 @@ function useDragSideBar() {
     window.removeEventListener("mouseup", handleMouseUp.current);
   });
 
-  const onDragMouseDown = (e: React.MouseEvent) => {
+  const onDragMouseDown = (e) => {
     startX.current = e.clientX;
 
     window.addEventListener("mousemove", handleMouseMove.current);
@@ -97,7 +97,7 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(props: { className?: string }) {
+export function SideBar(props) {
   const chatStore = useChatStore();
 
   // drag side bar
@@ -110,13 +110,17 @@ export function SideBar(props: { className?: string }) {
   const openDocChainGPT = () => {
     window.open("https://docchaingpt.streamlit.app/", "_blank");
   };
-  
+
   const openPrompts = () => {
     window.open("https://flowgpt.com/", "_blank");
   };
-  
+
   const redirectToAutoGPT = () => {
     window.location.href = "https://yaaagia2.vercel.app/en";
+  };
+
+  const openAwas = () => {
+    window.open("https://awas-gpt.vercel.app", "_blank");
   };
 
   return (
@@ -146,15 +150,21 @@ export function SideBar(props: { className?: string }) {
           shadow
         />
         <IconButton
-          icon={<span>DocChain GPT</span>}
+          text="DocChain GPT"
           className={styles["sidebar-bar-button"]}
           onClick={openDocChainGPT}
           shadow
         />
         <IconButton
-          icon={<span>Prompts</span>}
+          text="Prompts"
           className={styles["sidebar-bar-button"]}
           onClick={openPrompts}
+          shadow
+        />
+        <IconButton
+          text="Awas"
+          className={styles["sidebar-bar-button"]}
+          onClick={openAwas}
           shadow
         />
       </div>

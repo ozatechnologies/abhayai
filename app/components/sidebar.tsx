@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, MouseEvent, KeyboardEvent } from "react";
 import styles from "./home.module.scss";
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
@@ -29,24 +29,24 @@ function useHotKey() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-  if (e.metaKey || e.altKey || e.ctrlKey) {
-    const n = chatStore.sessions.length;
-    const limit = (x: number) => (x + n) % n;
-    const i = chatStore.currentSessionIndex;
-    if (e.key === "ArrowUp") {
-      chatStore.selectSession(limit(i - 1));
-    } else if (e.key === "ArrowDown") {
-      chatStore.selectSession(limit(i + 1));
-    }
-  }
-};
+      if (e.metaKey || e.altKey || e.ctrlKey) {
+        const n = chatStore.sessions.length;
+        const limit = (x: number) => (x + n) % n;
+        const i = chatStore.currentSessionIndex;
+        if (e.key === "ArrowUp") {
+          chatStore.selectSession(limit(i - 1));
+        } else if (e.key === "ArrowDown") {
+          chatStore.selectSession(limit(i + 1));
+        }
+      }
+    };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
 }
 
 function useDragSideBar() {
-  const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x)
+  const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
   const config = useAppConfig();
   const startX = useRef(0);
@@ -54,9 +54,9 @@ function useDragSideBar() {
   const lastUpdateTime = useRef(Date.now());
 
   const handleMouseMove = useRef((e: MouseEvent) => {
-  if (Date.now() < lastUpdateTime.current + 50) {
-    return;
-  }
+    if (Date.now() < lastUpdateTime.current + 50) {
+      return;
+    }
     lastUpdateTime.current = Date.now();
     const d = e.clientX - startX.current;
     const nextWidth = limit(startDragWidth.current + d);
@@ -69,7 +69,7 @@ function useDragSideBar() {
     window.removeEventListener("mouseup", handleMouseUp.current);
   });
 
-  const onDragMouseDown = (e) => {
+  const onDragMouseDown = (e: MouseEvent) => {
     startX.current = e.clientX;
 
     window.addEventListener("mousemove", handleMouseMove.current);
@@ -96,7 +96,7 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(props) {
+export function SideBar(props: any) {
   const chatStore = useChatStore();
 
   // drag side bar

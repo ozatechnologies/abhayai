@@ -46,7 +46,6 @@ function useHotKey() {
   }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
 }
 
-
 function useDragSideBar() {
   const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
@@ -62,7 +61,9 @@ function useDragSideBar() {
     lastUpdateTime.current = Date.now();
     const d = e.clientX - startX.current;
     const nextWidth = limit(startDragWidth.current + d);
-    config.update((config) => (config.sidebarWidth = nextWidth));
+    config.update((config) => {
+      config.sidebarWidth = nextWidth;
+    });
   });
 
   const handleMouseUp = useRef(() => {
@@ -79,7 +80,7 @@ function useDragSideBar() {
   };
   const isMobileScreen = useMobileScreen();
   const shouldNarrow =
-    !isMobileScreen && config.sidebarWidth < MIN_SIDEBAR_WIDTH;
+    !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
 
   useEffect(() => {
     const barWidth = shouldNarrow
@@ -122,6 +123,21 @@ export function SideBar(props: any) {
 
   const openAwas = () => {
     window.open("https://awas-gpt.vercel.app", "_blank");
+  };
+
+  const handleChatDelete = () => {
+    if (window.confirm(Locale.Home.DeleteChat)) {
+      chatStore.deleteSession(chatStore.currentSessionIndex);
+    }
+  };
+
+  const handleNewChat = () => {
+    if (config.dontShowMaskSplashScreen) {
+      chatStore.newSession();
+      navigate(Path.Chat);
+    } else {
+      navigate(Path.NewChat);
+    }
   };
 
   return (
@@ -184,14 +200,7 @@ export function SideBar(props: any) {
       <div className={styles["sidebar-tail"]}>
         <div className={styles["sidebar-actions"]}>
           <div className={`${styles["sidebar-action"]} ${styles.mobile}`}>
-            <IconButton
-              icon={<CloseIcon />}
-              onClick={() => {
-                if (window.confirm(Locale.Home.DeleteChat)) {
-                  chatStore.deleteSession(chatStore.currentSessionIndex);
-                }
-              }}
-            />
+            <IconButton icon={<CloseIcon />} onClick={handleChatDelete} />
           </div>
           <div className={styles["sidebar-action"]}>
             <Link to={Path.Settings}>
@@ -203,14 +212,7 @@ export function SideBar(props: any) {
           <IconButton
             icon={<AddIcon />}
             text={shouldNarrow ? undefined : Locale.Home.NewChat}
-            onClick={() => {
-              if (config.dontShowMaskSplashScreen) {
-                chatStore.newSession();
-                navigate(Path.Chat);
-              } else {
-                navigate(Path.NewChat);
-              }
-            }}
+            onClick={handleNewChat}
             shadow
           />
         </div>

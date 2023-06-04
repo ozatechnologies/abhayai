@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useAppConfig } from "../store/config";

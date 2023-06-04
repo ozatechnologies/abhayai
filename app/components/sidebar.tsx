@@ -45,12 +45,6 @@ function useHotKey() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
 }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
-}
 
 function useDragSideBar() {
   const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);

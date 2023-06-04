@@ -12,7 +12,7 @@ import BotIcon from "../icons/bot.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 import styles from "./home.module.scss";
 
-export function Loading(props) {
+export function Loading(props: { noLogo?: boolean }) {
   return (
     <div className={styles["loading-content"] + " no-dark"}>
       {!props.noLogo && <BotIcon />}
@@ -20,6 +20,7 @@ export function Loading(props) {
     </div>
   );
 }
+
 
 const Settings = dynamic(async () => (await import("./settings")).Settings, {
   loading: () => <Loading noLogo />,

@@ -29,20 +29,20 @@ function useHotKey() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.metaKey || e.altKey || e.ctrlKey) {
-        const n = chatStore.sessions.length;
-        const limit = (x: number) => (x + n) % n;
-        const i = chatStore.currentSessionIndex;
-        if (e.key === "ArrowUp") {
-          chatStore.selectSession(limit(i - 1));
-        } else if (e.key === "ArrowDown") {
-          chatStore.selectSession(limit(i + 1));
-        }
-      }
-    };
+  if (e.metaKey || e.altKey || e.ctrlKey) {
+    const n = chatStore.sessions.length;
+    const limit = (x: number) => (x + n) % n;
+    const i = chatStore.currentSessionIndex;
+    if (e.key === "ArrowUp") {
+      chatStore.selectSession(limit(i - 1));
+    } else if (e.key === "ArrowDown") {
+      chatStore.selectSession(limit(i + 1));
+    }
+  }
+};
 
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+window.addEventListener("keydown", onKeyDown);
+return () => window.removeEventListener("keydown", onKeyDown);
   }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
 }
 

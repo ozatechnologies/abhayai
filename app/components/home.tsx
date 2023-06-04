@@ -108,8 +108,9 @@ function Screen() {
         }`
       }
     >
-      <SideBar className={isHome ? styles["sidebar-show"] : ""} />
-
+      export function SideBar(props: { className?: string }) {
+  // Component implementation
+}
       <div className={styles["window-content"]} id={SlotID.AppBody}>
         <Routes>
           <Route path={Path.Home} element={<Chat />} />

@@ -1,24 +1,17 @@
-import React, { useEffect, useRef, MouseEvent, KeyboardEvent } from "react";
-import styles from "./home.module.scss";
+import React, { useEffect, useCallback, MouseEvent, KeyboardEvent, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import dynamic from "next/dynamic";
+import Locale from "../locales";
+import { useAppConfig, useChatStore } from "../store";
+import { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH, NARROW_SIDEBAR_WIDTH, Path, REPO_URL } from "../constant";
+import { useMobileScreen } from "../utils";
+import { showToast } from "./ui-lib";
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
-import Locale from "../locales";
-import { useAppConfig, useChatStore } from "../store";
-import {
-  MAX_SIDEBAR_WIDTH,
-  MIN_SIDEBAR_WIDTH,
-  NARROW_SIDEBAR_WIDTH,
-  Path,
-  REPO_URL,
-} from "../constant";
-import { Link, useNavigate } from "react-router-dom";
-import { useMobileScreen } from "../utils";
-import dynamic from "next/dynamic";
-import { showToast } from "./ui-lib";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -27,23 +20,26 @@ const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
 function useHotKey() {
   const chatStore = useChatStore();
 
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent): void => {
-  if (e.metaKey || e.altKey || e.ctrlKey) {
-    const n = chatStore.sessions.length;
-    const limit = (x: number) => (x + n) % n;
-    const i = chatStore.currentSessionIndex;
-    if (e.key === "ArrowUp") {
-      chatStore.selectSession(limit(i - 1));
-    } else if (e.key === "ArrowDown") {
-      chatStore.selectSession(limit(i + 1));
-    }
-  }
-};
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent): void => {
+      if (e.metaKey || e.altKey || e.ctrlKey) {
+        const n = chatStore.sessions.length;
+        const limit = (x: number) => (x + n) % n;
+        const i = chatStore.currentSessionIndex;
+        if (e.key === "ArrowUp") {
+          chatStore.selectSession(limit(i - 1));
+        } else if (e.key === "ArrowDown") {
+          chatStore.selectSession(limit(i + 1));
+        }
+      }
+    },
+    [chatStore]
+  );
 
-window.addEventListener("keydown", onKeyDown);
-return () => window.removeEventListener("keydown", onKeyDown);
-  }, [chatStore.sessions.length, chatStore.currentSessionIndex]);
+  useEffect(() => {
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onKeyDown]);
 }
 
 function useDragSideBar() {
@@ -54,43 +50,44 @@ function useDragSideBar() {
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = useRef((e: MouseEvent) => {
-    if (Date.now() < lastUpdateTime.current + 50) {
-      return;
-    }
-    lastUpdateTime.current = Date.now();
-    const d = e.clientX - startX.current;
-    const nextWidth = limit(startDragWidth.current + d);
-    config.update((config) => {
-      config.sidebarWidth = nextWidth;
-    });
-  });
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (Date.now() < lastUpdateTime.current + 50) {
+        return;
+      }
+      lastUpdateTime.current = Date.now();
+      const d = e.clientX - startX.current;
+      const nextWidth = limit(startDragWidth.current + d);
+      config.update((config) => {
+        config.sidebarWidth = nextWidth;
+      });
+    },
+    [config]
+  );
 
-  const handleMouseUp = useRef(() => {
+  const handleMouseUp = useCallback(() => {
     startDragWidth.current = config.sidebarWidth ?? 300;
-    window.removeEventListener("mousemove", handleMouseMove.current);
-    window.removeEventListener("mouseup", handleMouseUp.current);
-  });
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+  }, [config.sidebarWidth, handleMouseMove]);
 
-  const onDragMouseDown = (e: MouseEvent) => {
-    startX.current = e.clientX;
+  const onDragMouseDown = useCallback(
+    (e: MouseEvent) => {
+      startX.current = e.clientX;
 
-    window.addEventListener("mousemove", handleMouseMove.current);
-    window.addEventListener("mouseup", handleMouseUp.current);
-  };
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    },
+    [handleMouseMove, handleMouseUp]
+  );
+
   const isMobileScreen = useMobileScreen();
-  const shouldNarrow =
-    !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
+  const shouldNarrow = !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
 
   useEffect(() => {
-    const barWidth = shouldNarrow
-      ? NARROW_SIDEBAR_WIDTH
-      : limit(config.sidebarWidth ?? 300);
+    const barWidth = shouldNarrow ? NARROW_SIDEBAR_WIDTH : limit(config.sidebarWidth ?? 300);
     const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
-    document.documentElement.style.setProperty(
-      "--sidebar-width",
-      sideBarWidth
-    );
+    document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {
@@ -99,133 +96,80 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(props: any) {
+export function SideBar(): JSX.Element {
   const chatStore = useChatStore();
-
-  // drag side bar
-  const { onDragMouseDown, shouldNarrow } = useDragSideBar();
-  const navigate = useNavigate();
   const config = useAppConfig();
+  const navigate = useNavigate();
 
   useHotKey();
+  const { onDragMouseDown, shouldNarrow } = useDragSideBar();
 
-  const openDocChainGPT = () => {
-    window.open("https://docchaingpt.streamlit.app/", "_blank");
+  const handleOpenSettings = () => {
+    navigate(Path.Settings);
   };
 
-  const openPrompts = () => {
-    window.open("https://flowgpt.com/", "_blank");
+  const handleOpenCreateSession = () => {
+    navigate(Path.CreateSession);
   };
 
-  const redirectToAutoGPT = () => {
-    window.location.href = "https://yaaagia2.vercel.app/en";
+  const handleOpenPlugins = () => {
+    navigate(Path.Plugins);
   };
 
-  const openAwas = () => {
-    window.open("https://awas-gpt.vercel.app", "_blank");
+  const handleToggleMask = () => {
+    config.update((config) => {
+      config.mask = !config.mask;
+    });
+    showToast(Locale.Tips.MaskToggle);
   };
 
-  const handleChatDelete = () => {
-    if (window.confirm(Locale.Home.DeleteChat)) {
-      chatStore.deleteSession(chatStore.currentSessionIndex);
-    }
-  };
-
-  const handleNewChat = () => {
-    if (config.dontShowMaskSplashScreen) {
-      chatStore.newSession();
-      navigate(Path.Chat);
-    } else {
-      navigate(Path.NewChat);
-    }
-  };
+  const sidebarClassName = shouldNarrow ? "sidebar-narrow" : "";
 
   return (
-    <div
-      className={`${styles.sidebar} ${props.className} ${
-        shouldNarrow ? styles["narrow-sidebar"] : ""
-      }`}
-    >
-      <div className={styles["sidebar-header"]}>
-        <div className={styles["sidebar-title"]}>Avana</div>
-        <div className={styles["sidebar-sub-title"]}>SYST</div>
-      </div>
-
-      <div className={styles["sidebar-header-bar"]}>
-        <IconButton
-          icon={<MaskIcon />}
-          text={shouldNarrow ? undefined : Locale.Mask.Name}
-          className={styles["sidebar-bar-button"]}
-          onClick={() => navigate(Path.NewChat, { state: { fromHome: true } })}
-          shadow
-        />
-        <IconButton
-          icon={<PluginIcon />}
-          text={shouldNarrow ? undefined : Locale.Plugin.Name}
-          className={styles["sidebar-bar-button"]}
-          onClick={() => showToast(Locale.WIP)}
-          shadow
-        />
-        <IconButton
-          text="DocChain GPT"
-          className={styles["sidebar-bar-button"]}
-          onClick={openDocChainGPT}
-          shadow
-        />
-        <IconButton
-          text="Prompts"
-          className={styles["sidebar-bar-button"]}
-          onClick={openPrompts}
-          shadow
-        />
-        <IconButton
-          text="Awas"
-          className={styles["sidebar-bar-button"]}
-          onClick={openAwas}
-          shadow
-        />
-      </div>
-
-      <div
-        className={styles["sidebar-body"]}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            navigate(Path.Home);
-          }
-        }}
-      >
-        <ChatList narrow={shouldNarrow} />
-      </div>
-
-      <div className={styles["sidebar-tail"]}>
-        <div className={styles["sidebar-actions"]}>
-          <div className={`${styles["sidebar-action"]} ${styles.mobile}`}>
-            <IconButton icon={<CloseIcon />} onClick={handleChatDelete} />
-          </div>
-          <div className={styles["sidebar-action"]}>
-            <Link to={Path.Settings}>
-              <IconButton icon={<SettingsIcon />} shadow />
-            </Link>
-          </div>
-        </div>
-        <div>
+    <aside className={`sidebar ${sidebarClassName}`}>
+      <div className="sidebar-drag-area" onMouseDown={onDragMouseDown} />
+      <div className="sidebar-content">
+        <div className="sidebar-header">
+          <Link to={Path.Home}>
+            <img src="/static/logo.svg" className="logo" alt={Locale.Title} />
+          </Link>
           <IconButton
-            icon={<AddIcon />}
-            text={shouldNarrow ? undefined : Locale.Home.NewChat}
-            onClick={handleNewChat}
-            shadow
+            className="btn btn-settings"
+            icon={<SettingsIcon />}
+            title={Locale.Tooltip.Settings}
+            onClick={handleOpenSettings}
           />
         </div>
+        <ChatList />
+        <div className="sidebar-footer">
+          <IconButton
+            className="btn btn-create-session"
+            icon={<AddIcon />}
+            title={Locale.Tooltip.CreateSession}
+            onClick={handleOpenCreateSession}
+          />
+          <IconButton
+            className="btn btn-toggle-mask"
+            icon={<MaskIcon />}
+            title={Locale.Tooltip.ToggleMask}
+            onClick={handleToggleMask}
+          />
+          <IconButton
+            className="btn btn-plugins"
+            icon={<PluginIcon />}
+            title={Locale.Tooltip.Plugins}
+            onClick={handleOpenPlugins}
+          />
+          <a className="btn btn-github" href={REPO_URL} target="_blank" rel="noopener noreferrer">
+            <img src="/static/github.svg" alt={Locale.Tooltip.Github} />
+          </a>
+        </div>
       </div>
-
-      <div
-        className={styles["sidebar-drag"]}
-        onMouseDown={onDragMouseDown}
-      ></div>
-
-      <div className={styles["autogpt-button"]}>
-        <button onClick={redirectToAutoGPT}>AutoGPT</button>
+      <div className="sidebar-resize-handle" onMouseDown={onDragMouseDown}>
+        <div className="handle-icon">
+          <CloseIcon />
+        </div>
       </div>
-    </div>
+    </aside>
   );
 }

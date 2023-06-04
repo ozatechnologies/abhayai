@@ -12,7 +12,7 @@ import BotIcon from "../icons/bot.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 import styles from "./home.module.scss";
 
-export function Loading(props: { noLogo?: boolean }) {
+export function Loading(props) {
   return (
     <div className={styles["loading-content"] + " no-dark"}>
       {!props.noLogo && <BotIcon />}
@@ -69,7 +69,7 @@ export function useSwitchTheme() {
 }
 
 const useHasHydrated = () => {
-  const [hasHydrated, setHasHydrated] = React.useState<boolean>(false);
+  const [hasHydrated, setHasHydrated] = React.useState(false);
 
   useEffect(() => {
     setHasHydrated(true);

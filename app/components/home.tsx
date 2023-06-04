@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { SideBar } from "./sidebar";
@@ -20,7 +18,6 @@ export function Loading(props: { noLogo?: boolean }) {
     </div>
   );
 }
-
 
 const Settings = dynamic(async () => (await import("./settings")).Settings, {
   loading: () => <Loading noLogo />,
@@ -70,7 +67,7 @@ export function useSwitchTheme() {
 }
 
 const useHasHydrated = () => {
-  const [hasHydrated, setHasHydrated] = React.useState(false);
+  const [hasHydrated, setHasHydrated] = React.useState<boolean>(false);
 
   useEffect(() => {
     setHasHydrated(true);
@@ -99,14 +96,11 @@ function Screen() {
 
   return (
     <div
-      className={
-        styles.container +
-        ` ${
-          config.tightBorder && !isMobileScreen
-            ? styles["tight-container"]
-            : styles.container
-        }`
-      }
+      className={`${styles.container} ${
+        config.tightBorder && !isMobileScreen
+          ? styles["tight-container"]
+          : styles.container
+      }`}
     >
       <SideBar className={isHome ? styles["sidebar-show"] : ""} />
 

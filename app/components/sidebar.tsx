@@ -1,18 +1,57 @@
-import React, { useEffect, useCallback, MouseEvent, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAppConfig, useChatStore } from "../store";
-import { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH, NARROW_SIDEBAR_WIDTH, Path, REPO_URL } from "../constant";
-import { useMobileScreen } from "../utils";
-import { showToast } from "./ui-lib";
+import { useEffect, useRef } from "react";
+
+import styles from "./home.module.scss";
+
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
+import GithubIcon from "../icons/github.svg";
+import ChatGptIcon from "../icons/chatgpt.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
 
-interface SideBarProps {
-  className?: string;
+import Locale from "../locales";
+
+import { useAppConfig, useChatStore } from "../store";
+
+import {
+  MAX_SIDEBAR_WIDTH,
+  MIN_SIDEBAR_WIDTH,
+  NARROW_SIDEBAR_WIDTH,
+  Path,
+  REPO_URL,
+} from "../constant";
+
+import { Link, useNavigate } from "react-router-dom";
+import { useMobileScreen } from "../utils";
+import dynamic from "next/dynamic";
+import { showToast } from "./ui-lib";
+
+const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
+  loading: () => null,
+});
+
+function useHotKey() {
+  const chatStore = useChatStore();
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.altKey || e.ctrlKey) {
+        const n = chatStore.sessions.length;
+        const limit = (x: number) => (x + n) % n;
+        const i = chatStore.currentSessionIndex;
+        if (e.key === "ArrowUp") {
+          chatStore.selectSession(limit(i - 1));
+        } else if (e.key === "ArrowDown") {
+          chatStore.selectSession(limit(i + 1));
+        }
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
 }
 
 function useDragSideBar() {
@@ -23,124 +62,138 @@ function useDragSideBar() {
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (Date.now() < lastUpdateTime.current + 50) {
-        return;
-      }
-      lastUpdateTime.current = Date.now();
-      const d = e.clientX - startX.current;
-      const nextWidth = limit(startDragWidth.current + d);
-      config.update((config) => {
-        config.sidebarWidth = nextWidth;
-      });
-    },
-    [config]
-  );
+  const handleMouseMove = useRef((e: MouseEvent) => {
+    if (Date.now() < lastUpdateTime.current + 50) {
+      return;
+    }
+    lastUpdateTime.current = Date.now();
+    const d = e.clientX - startX.current;
+    const nextWidth = limit(startDragWidth.current + d);
+    config.update((config) => (config.sidebarWidth = nextWidth));
+  });
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useRef(() => {
     startDragWidth.current = config.sidebarWidth ?? 300;
     window.removeEventListener("mousemove", handleMouseMove.current);
-    window.removeEventListener("mouseup", handleMouseUp);
-  }, [config.sidebarWidth, handleMouseMove]);
+    window.removeEventListener("mouseup", handleMouseUp.current);
+  });
 
-  const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
-      startX.current = e.clientX;
+  const onDragMouseDown = (e: MouseEvent) => {
+    startX.current = e.clientX;
 
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    },
-    [handleMouseMove, handleMouseUp]
-  );
-
+    window.addEventListener("mousemove", handleMouseMove.current);
+    window.addEventListener("mouseup", handleMouseUp.current);
+  };
   const isMobileScreen = useMobileScreen();
-  const shouldNarrow = !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
+  const shouldNarrow =
+    !isMobileScreen && config.sidebarWidth < MIN_SIDEBAR_WIDTH;
 
   useEffect(() => {
-    const barWidth = shouldNarrow ? NARROW_SIDEBAR_WIDTH : limit(config.sidebarWidth ?? 300);
+    const barWidth = shouldNarrow
+      ? NARROW_SIDEBAR_WIDTH
+      : limit(config.sidebarWidth ?? 300);
     const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
     document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
-  return { handleMouseDown };
+  return {
+    onDragMouseDown,
+    shouldNarrow,
+  };
 }
 
-const SideBar: React.FC<SideBarProps> = ({ className }) => {
-  const config = useAppConfig();
+export function SideBar(props: { className?: string }) {
+  const chatStore = useChatStore();
+
+  // drag side bar
+  const { onDragMouseDown, shouldNarrow } = useDragSideBar();
   const navigate = useNavigate();
+  const config = useAppConfig();
 
-  const handleOpenSettings = useCallback(() => {
-    navigate(Path.Settings);
-  }, [navigate]);
-
-  const handleOpenCreateSession = useCallback(() => {
-    navigate(Path.CreateSession);
-  }, [navigate]);
-
-  const handleOpenPlugins = useCallback(() => {
-    navigate(Path.Plugins);
-  }, [navigate]);
-
-  const handleToggleMask = useCallback(() => {
-    config.update((config) => {
-      config.mask = !config.mask;
-    });
-    showToast(Locale.Tips.MaskToggle);
-  }, [config]);
-
-  const { handleMouseDown } = useDragSideBar(config);
-
-  const isMobileScreen = useMobileScreen();
-  const sidebarClassName = isMobileScreen ? "sidebar-narrow" : "";
+  useHotKey();
 
   return (
-    <aside className={`sidebar ${sidebarClassName} ${className}`}>
-      <div className="sidebar-drag-area" onMouseDown={handleMouseDown} />
-      <div className="sidebar-content">
-        <div className="sidebar-header">
-          <Link to={Path.Home}>
-            <img src="/static/logo.svg" className="logo" alt={Locale.Title} />
-          </Link>
-          <IconButton
-            className="btn btn-settings"
-            icon={<SettingsIcon />}
-            title={Locale.Tooltip.Settings}
-            onClick={handleOpenSettings}
-          />
+    <div
+      className={`${styles.sidebar} ${props.className} ${
+        shouldNarrow && styles["narrow-sidebar"]
+      }`}
+    >
+      <div className={styles["sidebar-header"]}>
+        <div className={styles["sidebar-title"]}>AvanaAI</div>
+        <div className={styles["sidebar-sub-title"]}>
+          Avana Your Own bot !
         </div>
-        {/* ChatList component */}
-        <div className="sidebar-footer">
-          <IconButton
-            className="btn btn-create-session"
-            icon={<AddIcon />}
-            title={Locale.Tooltip.CreateSession}
-            onClick={handleOpenCreateSession}
-          />
-          <IconButton
-            className="btn btn-toggle-mask"
-            icon={<MaskIcon />}
-            title={Locale.Tooltip.ToggleMask}
-            onClick={handleToggleMask}
-          />
-          <IconButton
-            className="btn btn-plugins"
-            icon={<PluginIcon />}
-            title={Locale.Tooltip.Plugins}
-            onClick={handleOpenPlugins}
-          />
-          <a className="btn btn-github" href={REPO_URL} target="_blank" rel="noopener noreferrer">
-            <img src="/static/github.svg" alt={Locale.Tooltip.Github} />
-          </a>
+        <div className={styles["sidebar-logo"] + " no-dark"}>
+          <ChatGptIcon />
         </div>
       </div>
-      <div className="sidebar-resize-handle" onMouseDown={handleMouseDown}>
-        <div className="handle-icon">
-          <CloseIcon />
-        </div>
-      </div>
-    </aside>
-  );
-};
 
-export default SideBar;
+      <div className={styles["sidebar-header-bar"]}>
+        <IconButton
+          icon={<MaskIcon />}
+          text={shouldNarrow ? undefined : Locale.Mask.Name}
+          className={styles["sidebar-bar-button"]}
+          onClick={() => navigate(Path.NewChat, { state: { fromHome: true } })}
+          shadow
+        />
+        <IconButton
+          icon={<PluginIcon />}
+          text={shouldNarrow ? undefined : Locale.Plugin.Name}
+          className={styles["sidebar-bar-button"]}
+          onClick={() => showToast(Locale.WIP)}
+          shadow
+        />
+      </div>
+
+      <div
+        className={styles["sidebar-body"]}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            navigate(Path.Home);
+          }
+        }}
+      >
+        <ChatList narrow={shouldNarrow} />
+      </div>
+
+      <div className={styles["sidebar-tail"]}>
+        <div className={styles["sidebar-actions"]}>
+          <div className={styles["sidebar-action"] + " " + styles.mobile}>
+            <IconButton
+              icon={<CloseIcon />}
+              onClick={() => {
+                if (confirm(Locale.Home.DeleteChat)) {
+                  chatStore.deleteSession(chatStore.currentSessionIndex);
+                }
+              }}
+            />
+          </div>
+          <div className={styles["sidebar-action"]}>
+            <Link to={Path.Settings}>
+              <IconButton icon={<SettingsIcon />} shadow />
+            </Link>
+          </div>
+        <div>
+          <IconButton
+            icon={<AddIcon />}
+            text={shouldNarrow ? undefined : Locale.Home.NewChat}
+            onClick={() => {
+              if (config.dontShowMaskSplashScreen) {
+                chatStore.newSession();
+                navigate(Path.Chat);
+              } else {
+                navigate(Path.NewChat);
+              }
+            }}
+            shadow
+          />
+        </div>
+      </div>
+
+      <div
+        className={styles["sidebar-drag"]}
+        onMouseDown={(e) => onDragMouseDown(e as any)}
+      ></div>
+    </div>
+  );
+}

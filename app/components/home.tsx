@@ -20,6 +20,15 @@ export function Loading(props: { noLogo?: boolean }) {
   );
 }
 
+// Updated SideBar component code
+interface SideBarProps {
+  className?: string;
+}
+
+export const SideBar: React.FC<SideBarProps> = ({ className }) => {
+  // Component code
+};
+
 const Settings = dynamic(async () => (await import("./settings")).Settings, {
   loading: () => <Loading noLogo />,
 });

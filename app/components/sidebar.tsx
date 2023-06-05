@@ -119,6 +119,10 @@ return (
     }`}
   >
     {/* JSX content here */}
+  </div>
+);
+  >
+    {/* JSX content here */}
     <div className={styles["sidebar-header"]}>
       <div className={styles["sidebar-title"]}>AvanaAI</div>
       <div className={styles["sidebar-sub-title"]}>

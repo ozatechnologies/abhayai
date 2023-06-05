@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, MouseEvent, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AppConfig } from "../types";
+import { AppConfig } from "../store";
 import { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH, NARROW_SIDEBAR_WIDTH, Path, REPO_URL } from "../constant";
 import { useMobileScreen } from "../utils";
 import { showToast } from "./ui-lib";

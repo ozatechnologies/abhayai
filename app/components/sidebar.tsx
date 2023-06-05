@@ -41,8 +41,8 @@ function useHotKey() {
   );
 
   useEffect(() => {
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
+    return () => window.removeEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
   }, [onKeyDown]);
 
   return { onKeyDown };

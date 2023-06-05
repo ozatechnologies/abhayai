@@ -1,14 +1,28 @@
 "use client";
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import { useAppConfig } from "../store/config";
-import { Path, SlotID } from "../constant";
-import { ErrorBoundary } from "./error";
-import { getCSSVar, useMobileScreen } from "../utils";
-import dynamic from "next/dynamic";
+
+require("../polyfill");
+
+import { useState, useEffect } from "react";
+
+import styles from "./home.module.scss";
+
 import BotIcon from "../icons/bot.svg";
 import LoadingIcon from "../icons/three-dots.svg";
-import styles from "./home.module.scss";
+
+import { getCSSVar, useMobileScreen } from "../utils";
+
+import dynamic from "next/dynamic";
+import { Path, SlotID } from "../constant";
+import { ErrorBoundary } from "./error";
+
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import { SideBar } from "./sidebar";
+import { useAppConfig } from "../store/config";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -18,15 +32,6 @@ export function Loading(props: { noLogo?: boolean }) {
     </div>
   );
 }
-
-// Updated SideBar component code
-interface SideBarProps {
-  className?: string;
-}
-
-export const SideBar: React.FC<SideBarProps> = ({ className }) => {
-  // Component code
-};
 
 const Settings = dynamic(async () => (await import("./settings")).Settings, {
   loading: () => <Loading noLogo />,
@@ -58,10 +63,10 @@ export function useSwitchTheme() {
     }
 
     const metaDescriptionDark = document.querySelector(
-      'meta[name="theme-color"][media*="dark"]'
+      'meta[name="theme-color"][media*="dark"]',
     );
     const metaDescriptionLight = document.querySelector(
-      'meta[name="theme-color"][media*="light"]'
+      'meta[name="theme-color"][media*="light"]',
     );
 
     if (config.theme === "auto") {
@@ -76,7 +81,7 @@ export function useSwitchTheme() {
 }
 
 const useHasHydrated = () => {
-  const [hasHydrated, setHasHydrated] = React.useState<boolean>(false);
+  const [hasHydrated, setHasHydrated] = useState<boolean>(false);
 
   useEffect(() => {
     setHasHydrated(true);
@@ -105,11 +110,14 @@ function Screen() {
 
   return (
     <div
-      className={`${styles.container} ${
-        config.tightBorder && !isMobileScreen
-          ? styles["tight-container"]
-          : styles.container
-      }`}
+      className={
+        styles.container +
+        ` ${
+          config.tightBorder && !isMobileScreen
+            ? styles["tight-container"]
+            : styles.container
+        }`
+      }
     >
       <SideBar className={isHome ? styles["sidebar-show"] : ""} />
 

@@ -112,12 +112,15 @@ export function SideBar(props: { className?: string }) {
 
   useHotKey();
 
-  return (
-    <div
-      className={`${styles.sidebar} ${props.className} ${
-        shouldNarrow && styles["narrow-sidebar"]
-      }`}
-    >
+ return (
+  <div
+    className={`${styles.sidebar} ${props.className} ${
+      shouldNarrow && styles["narrow-sidebar"]
+    }`}
+  >
+    {/* JSX content here */}
+  </div>
+);
       <div className={styles["sidebar-header"]}>
         <div className={styles["sidebar-title"]}>AvanaAI</div>
         <div className={styles["sidebar-sub-title"]}>

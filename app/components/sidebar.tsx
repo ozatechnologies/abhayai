@@ -126,7 +126,7 @@ export function SideBar(): JSX.Element {
   const sidebarClassName = shouldNarrow ? "sidebar-narrow" : "";
 
   return (
-    <aside className={`sidebar ${sidebarClassName}`}>
+  <aside className={`sidebar ${className}`}>
       <div className="sidebar-drag-area" onMouseDown={onDragMouseDown} />
       <div className="sidebar-content">
         <div className="sidebar-header">
@@ -170,6 +170,6 @@ export function SideBar(): JSX.Element {
           <CloseIcon />
         </div>
       </div>
-    </aside>
+   </aside>
   );
 }

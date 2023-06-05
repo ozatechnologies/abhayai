@@ -17,6 +17,10 @@ const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
 });
 
+interface SideBarProps {
+  className?: string;
+}
+
 function useHotKey() {
   const chatStore = useChatStore();
 
@@ -40,6 +44,8 @@ function useHotKey() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onKeyDown]);
+
+  return { onKeyDown };
 }
 
 function useDragSideBar() {
@@ -96,12 +102,12 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(): JSX.Element {
+export function SideBar({ className }: SideBarProps): JSX.Element {
   const chatStore = useChatStore();
   const config = useAppConfig();
   const navigate = useNavigate();
 
-  useHotKey();
+  const { onKeyDown } = useHotKey();
   const { onDragMouseDown, shouldNarrow } = useDragSideBar();
 
   const handleOpenSettings = () => {
@@ -126,7 +132,7 @@ export function SideBar(): JSX.Element {
   const sidebarClassName = shouldNarrow ? "sidebar-narrow" : "";
 
   return (
-  <aside className={`sidebar ${className}`}>
+    <aside className={`sidebar ${className}`}>
       <div className="sidebar-drag-area" onMouseDown={onDragMouseDown} />
       <div className="sidebar-content">
         <div className="sidebar-header">
@@ -170,6 +176,6 @@ export function SideBar(): JSX.Element {
           <CloseIcon />
         </div>
       </div>
-   </aside>
+    </aside>
   );
 }

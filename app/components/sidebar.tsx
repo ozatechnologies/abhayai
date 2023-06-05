@@ -12,6 +12,7 @@ import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
+import Image from "next/image";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -48,10 +49,9 @@ function useHotKey() {
   return { onKeyDown };
 }
 
-function useDragSideBar() {
+function useDragSideBar(config: any) {
   const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
-  const config = useAppConfig();
   const startX = useRef(0);
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
@@ -63,163 +63,109 @@ function useDragSideBar() {
       }
       lastUpdateTime.current = Date.now();
       const d = e.clientX - startX.current;
-      const nextWidth = limit(startDragWidth.current + d);
-      config.update((config) => {
-        config.sidebarWidth = nextWidth;
-      });
+      config.setSidebarWidth(limit(startDragWidth.current + d));
     },
-    [config]
+    [config, limit, startDragWidth]
   );
 
   const handleMouseUp = useCallback(() => {
-    startDragWidth.current = config.sidebarWidth ?? 300;
-    window.removeEventListener("mousemove", handleMouseMove);
-    window.removeEventListener("mouseup", handleMouseUp);
-  }, [config.sidebarWidth, handleMouseMove]);
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+  }, [handleMouseMove]);
 
-  const onDragMouseDown = useCallback(
+  const handleMouseDown = useCallback(
     (e: MouseEvent) => {
+      e.preventDefault();
       startX.current = e.clientX;
-
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
+      startDragWidth.current = config.sidebarWidth ?? 300;
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     },
-    [handleMouseMove, handleMouseUp]
+    [config, handleMouseMove, handleMouseUp]
   );
 
-  const isMobileScreen = useMobileScreen();
-  const shouldNarrow = !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
-
-  useEffect(() => {
-    const barWidth = shouldNarrow ? NARROW_SIDEBAR_WIDTH : limit(config.sidebarWidth ?? 300);
-    const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
-    document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
-  }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
-
-  return {
-    onDragMouseDown,
-    shouldNarrow,
-  };
+  return { handleMouseDown };
 }
 
-export function SideBar({ className }: SideBarProps): JSX.Element {
-  const chatStore = useChatStore();
-  const config = useAppConfig();
+const Sidebar: React.FC<SideBarProps> = ({ className }) => {
   const navigate = useNavigate();
-
+  const chatStore = useChatStore();
+  const appConfig = useAppConfig();
   const { onKeyDown } = useHotKey();
-  const { onDragMouseDown, shouldNarrow } = useDragSideBar();
+  const isMobileScreen = useMobileScreen();
 
-  const handleOpenSettings = () => {
+  const handleSettingsClick = useCallback(() => {
     navigate(Path.Settings);
-  };
+  }, [navigate]);
 
-  const handleOpenCreateSession = () => {
-    navigate(Path.CreateSession);
-  };
+  const handleAddChatClick = useCallback(() => {
+    showToast("Not implemented yet!");
+  }, []);
 
-  const handleOpenPlugins = () => {
-    navigate(Path.Plugins);
-  };
+  const handleMaskClick = useCallback(() => {
+    chatStore.selectSession(-1);
+  }, [chatStore]);
 
-  const handleToggleMask = () => {
-    config.update((config) => {
-      config.mask = !config.mask;
-    });
-    showToast(Locale.Tips.MaskToggle);
-  };
-
-  const sidebarClassName = shouldNarrow ? "sidebar-narrow" : "";
+  const { handleMouseDown } = useDragSideBar(appConfig);
 
   useEffect(() => {
-    const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (Date.now() < lastUpdateTime.current + 50) {
-        return;
-      }
-      lastUpdateTime.current = Date.now();
-      const d = e.clientX - startX.current;
-      const nextWidth = limit(startDragWidth.current + d);
-      config.update((config) => {
-        config.sidebarWidth = nextWidth;
-      });
-    };
-
-    const handleMouseUp = () => {
-      startDragWidth.current = config.sidebarWidth ?? 300;
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      startX.current = e.clientX;
-
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    };
-
-    const isMobileScreen = useMobileScreen();
-    const shouldNarrow = !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
-
-    const handleResize = () => {
-      const barWidth = shouldNarrow ? NARROW_SIDEBAR_WIDTH : limit(config.sidebarWidth ?? 300);
-      const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
-      document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
+    document.addEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
+    return () => document.removeEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
+  }, [onKeyDown]);
 
   return (
-    <aside className={`sidebar ${className}`}>
-      <div className="sidebar-drag-area" onMouseDown={onDragMouseDown} />
-      <div className="sidebar-content">
-        <div className="sidebar-header">
-          <Link to={Path.Home}>
-            <img src="/static/logo.svg" className="logo" alt={Locale.Title} />
-          </Link>
-          <IconButton
-            className="btn btn-settings"
-            icon={<SettingsIcon />}
-            title={Locale.Tooltip.Settings}
-            onClick={handleOpenSettings}
-          />
-        </div>
-        <ChatList />
-        <div className="sidebar-footer">
-          <IconButton
-            className="btn btn-create-session"
-            icon={<AddIcon />}
-            title={Locale.Tooltip.CreateSession}
-            onClick={handleOpenCreateSession}
-          />
-          <IconButton
-            className="btn btn-toggle-mask"
-            icon={<MaskIcon />}
-            title={Locale.Tooltip.ToggleMask}
-            onClick={handleToggleMask}
-          />
-          <IconButton
-            className="btn btn-plugins"
-            icon={<PluginIcon />}
-            title={Locale.Tooltip.Plugins}
-            onClick={handleOpenPlugins}
-          />
-          <a className="btn btn-github" href={REPO_URL} target="_blank" rel="noopener noreferrer">
-            <img src="/static/github.svg" alt={Locale.Tooltip.Github} />
-          </a>
-        </div>
+    <aside className={className}>
+      <div className="flex items-center justify-between h-10 px-2">
+        <Link to={Path.Home}>
+          <Image src="/logo.png" alt="Logo" width={120} height={24} /> {/* Replace <img> with <Image> */}
+        </Link>
+        <IconButton
+          className="w-8 h-8 ml-2"
+          icon={SettingsIcon}
+          title={Locale.Settings}
+          onClick={handleSettingsClick}
+        />
       </div>
-      <div className="sidebar-resize-handle" onMouseDown={onDragMouseDown}>
-        <div className="handle-icon">
-          <CloseIcon />
-        </div>
+      <ChatList />
+      <div className="flex justify-center items-center py-4">
+        <IconButton
+          className="w-8 h-8"
+          icon={AddIcon}
+          title={Locale.AddChat}
+          onClick={handleAddChatClick}
+        />
       </div>
+      <div className="flex items-center justify-center h-10 px-2">
+        <IconButton
+          className="w-8 h-8"
+          icon={CloseIcon}
+          title={Locale.Close}
+          onClick={handleMaskClick}
+        />
+      </div>
+      {isMobileScreen && (
+        <div
+          className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-lg cursor-move absolute right-2 bottom-2"
+          onMouseDown={handleMouseDown}
+        >
+          <Image src={PluginIcon} alt="Drag Icon" width={16} height={16} /> {/* Replace <img> with <Image> */}
+        </div>
+      )}
+      {!isMobileScreen && (
+        <div
+          className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-lg cursor-move absolute right-2 top-2"
+          onMouseDown={handleMouseDown}
+        >
+          <Image src={PluginIcon} alt="Drag Icon" width={16} height={16} /> {/* Replace <img> with <Image> */}
+        </div>
+      )}
+      {isMobileScreen && (
+        <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-lg cursor-move absolute right-2 bottom-10">
+          <Image src={MaskIcon} alt="Mask Icon" width={16} height={16} /> {/* Replace <img> with <Image> */}
+        </div>
+      )}
     </aside>
   );
-}
+};
+
+export default Sidebar;

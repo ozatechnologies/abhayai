@@ -23,7 +23,7 @@ import {
 } from "react-router-dom";
 import SideBar from "./sidebar";
 
-import { useAppConfig } from "../store/config";
+import { AppConfig } from "../store/config";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (

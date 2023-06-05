@@ -131,6 +131,50 @@ export function SideBar({ className }: SideBarProps): JSX.Element {
 
   const sidebarClassName = shouldNarrow ? "sidebar-narrow" : "";
 
+  useEffect(() => {
+    const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (Date.now() < lastUpdateTime.current + 50) {
+        return;
+      }
+      lastUpdateTime.current = Date.now();
+      const d = e.clientX - startX.current;
+      const nextWidth = limit(startDragWidth.current + d);
+      config.update((config) => {
+        config.sidebarWidth = nextWidth;
+      });
+    };
+
+    const handleMouseUp = () => {
+      startDragWidth.current = config.sidebarWidth ?? 300;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      startX.current = e.clientX;
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    };
+
+    const isMobileScreen = useMobileScreen();
+    const shouldNarrow = !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
+
+    const handleResize = () => {
+      const barWidth = shouldNarrow ? NARROW_SIDEBAR_WIDTH : limit(config.sidebarWidth ?? 300);
+      const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
+      document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
+
   return (
     <aside className={`sidebar ${className}`}>
       <div className="sidebar-drag-area" onMouseDown={onDragMouseDown} />

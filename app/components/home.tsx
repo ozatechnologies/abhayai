@@ -120,7 +120,7 @@ function Screen() {
         }`
       }
     >
-      <SideBar className={isHome ? styles["sidebar-show"] : ""} />
+      <sidebar className={isHome ? styles["sidebar-show"] : ""} />
 
       <div className={styles["window-content"]} id={SlotID.AppBody}>
         <Routes>

@@ -1,8 +1,6 @@
-import React, { useEffect, useCallback, MouseEvent, KeyboardEvent, useRef } from "react";
+import React, { useEffect, useCallback, MouseEvent, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import dynamic from "next/dynamic";
-import Locale from "../locales";
-import { useAppConfig, useChatStore } from "../store";
+import { useAppConfig } from "../store";
 import { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH, NARROW_SIDEBAR_WIDTH, Path, REPO_URL } from "../constant";
 import { useMobileScreen } from "../utils";
 import { showToast } from "./ui-lib";
@@ -12,44 +10,12 @@ import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
-import Image from "next/image";
-
-const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
-  loading: () => null,
-});
 
 interface SideBarProps {
   className?: string;
 }
 
-function useHotKey() {
-  const chatStore = useChatStore();
-
-  const onKeyDown = useCallback(
-    (e: KeyboardEvent): void => {
-      if (e.metaKey || e.altKey || e.ctrlKey) {
-        const n = chatStore.sessions.length;
-        const limit = (x: number) => (x + n) % n;
-        const i = chatStore.currentSessionIndex;
-        if (e.key === "ArrowUp") {
-          chatStore.selectSession(limit(i - 1));
-        } else if (e.key === "ArrowDown") {
-          chatStore.selectSession(limit(i + 1));
-        }
-      }
-    },
-    [chatStore]
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
-    return () => window.removeEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
-  }, [onKeyDown]);
-
-  return { onKeyDown };
-}
-
-function useDragSideBar(config: any) {
+function useDragSideBar(config: AppConfig) {
   const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
   const startX = useRef(0);
@@ -63,109 +29,117 @@ function useDragSideBar(config: any) {
       }
       lastUpdateTime.current = Date.now();
       const d = e.clientX - startX.current;
-      config.setSidebarWidth(limit(startDragWidth.current + d));
+      const nextWidth = limit(startDragWidth.current + d);
+      config.update((config) => {
+        config.sidebarWidth = nextWidth;
+      });
     },
-    [config, limit, startDragWidth]
+    [config]
   );
 
   const handleMouseUp = useCallback(() => {
-    document.removeEventListener("mousemove", handleMouseMove);
-    document.removeEventListener("mouseup", handleMouseUp);
-  }, [handleMouseMove]);
+    startDragWidth.current = config.sidebarWidth ?? 300;
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+  }, [config.sidebarWidth, handleMouseMove]);
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
-      e.preventDefault();
       startX.current = e.clientX;
-      startDragWidth.current = config.sidebarWidth ?? 300;
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
     },
-    [config, handleMouseMove, handleMouseUp]
+    [handleMouseMove, handleMouseUp]
   );
+
+  const isMobileScreen = useMobileScreen();
+  const shouldNarrow = !isMobileScreen && (config.sidebarWidth ?? 300) < MIN_SIDEBAR_WIDTH;
+
+  useEffect(() => {
+    const barWidth = shouldNarrow ? NARROW_SIDEBAR_WIDTH : limit(config.sidebarWidth ?? 300);
+    const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
+    document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
+  }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return { handleMouseDown };
 }
 
-const Sidebar: React.FC<SideBarProps> = ({ className }) => {
+const SideBar: React.FC<SideBarProps> = ({ className }) => {
+  const config = useAppConfig();
   const navigate = useNavigate();
-  const chatStore = useChatStore();
-  const appConfig = useAppConfig();
-  const { onKeyDown } = useHotKey();
-  const isMobileScreen = useMobileScreen();
 
-  const handleSettingsClick = useCallback(() => {
+  const handleOpenSettings = useCallback(() => {
     navigate(Path.Settings);
   }, [navigate]);
 
-  const handleAddChatClick = useCallback(() => {
-    showToast("Not implemented yet!");
-  }, []);
+  const handleOpenCreateSession = useCallback(() => {
+    navigate(Path.CreateSession);
+  }, [navigate]);
 
-  const handleMaskClick = useCallback(() => {
-    chatStore.selectSession(-1);
-  }, [chatStore]);
+  const handleOpenPlugins = useCallback(() => {
+    navigate(Path.Plugins);
+  }, [navigate]);
 
-  const { handleMouseDown } = useDragSideBar(appConfig);
+  const handleToggleMask = useCallback(() => {
+    config.update((config) => {
+      config.mask = !config.mask;
+    });
+    showToast(Locale.Tips.MaskToggle);
+  }, [config]);
 
-  useEffect(() => {
-    document.addEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
-    return () => document.removeEventListener("keydown", onKeyDown as any); // Explicitly cast to any to avoid type error
-  }, [onKeyDown]);
+  const { handleMouseDown } = useDragSideBar(config);
+
+  const isMobileScreen = useMobileScreen();
+  const sidebarClassName = isMobileScreen ? "sidebar-narrow" : "";
 
   return (
-    <aside className={className}>
-      <div className="flex items-center justify-between h-10 px-2">
-        <Link to={Path.Home}>
-          <Image src="/logo.png" alt="Logo" width={120} height={24} /> {/* Replace <img> with <Image> */}
-        </Link>
-        <IconButton
-          className="w-8 h-8 ml-2"
-          icon={SettingsIcon}
-          title={Locale.Settings}
-          onClick={handleSettingsClick}
-        />
-      </div>
-      <ChatList />
-      <div className="flex justify-center items-center py-4">
-        <IconButton
-          className="w-8 h-8"
-          icon={AddIcon}
-          title={Locale.AddChat}
-          onClick={handleAddChatClick}
-        />
-      </div>
-      <div className="flex items-center justify-center h-10 px-2">
-        <IconButton
-          className="w-8 h-8"
-          icon={CloseIcon}
-          title={Locale.Close}
-          onClick={handleMaskClick}
-        />
-      </div>
-      {isMobileScreen && (
-        <div
-          className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-lg cursor-move absolute right-2 bottom-2"
-          onMouseDown={handleMouseDown}
-        >
-          <Image src={PluginIcon} alt="Drag Icon" width={16} height={16} /> {/* Replace <img> with <Image> */}
+    <aside className={`sidebar ${sidebarClassName} ${className}`}>
+      <div className="sidebar-drag-area" onMouseDown={handleMouseDown} />
+      <div className="sidebar-content">
+        <div className="sidebar-header">
+          <Link to={Path.Home}>
+            <img src="/static/logo.svg" className="logo" alt={Locale.Title} />
+          </Link>
+          <IconButton
+            className="btn btn-settings"
+            icon={<SettingsIcon />}
+            title={Locale.Tooltip.Settings}
+            onClick={handleOpenSettings}
+          />
         </div>
-      )}
-      {!isMobileScreen && (
-        <div
-          className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-lg cursor-move absolute right-2 top-2"
-          onMouseDown={handleMouseDown}
-        >
-          <Image src={PluginIcon} alt="Drag Icon" width={16} height={16} /> {/* Replace <img> with <Image> */}
+        {/* ChatList component */}
+        <div className="sidebar-footer">
+          <IconButton
+            className="btn btn-create-session"
+            icon={<AddIcon />}
+            title={Locale.Tooltip.CreateSession}
+            onClick={handleOpenCreateSession}
+          />
+          <IconButton
+            className="btn btn-toggle-mask"
+            icon={<MaskIcon />}
+            title={Locale.Tooltip.ToggleMask}
+            onClick={handleToggleMask}
+          />
+          <IconButton
+            className="btn btn-plugins"
+            icon={<PluginIcon />}
+            title={Locale.Tooltip.Plugins}
+            onClick={handleOpenPlugins}
+          />
+          <a className="btn btn-github" href={REPO_URL} target="_blank" rel="noopener noreferrer">
+            <img src="/static/github.svg" alt={Locale.Tooltip.Github} />
+          </a>
         </div>
-      )}
-      {isMobileScreen && (
-        <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-lg cursor-move absolute right-2 bottom-10">
-          <Image src={MaskIcon} alt="Mask Icon" width={16} height={16} /> {/* Replace <img> with <Image> */}
+      </div>
+      <div className="sidebar-resize-handle" onMouseDown={handleMouseDown}>
+        <div className="handle-icon">
+          <CloseIcon />
         </div>
-      )}
+      </div>
     </aside>
   );
 };
 
-export default Sidebar;
+export default SideBar;

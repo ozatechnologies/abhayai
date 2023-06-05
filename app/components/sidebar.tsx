@@ -40,7 +40,7 @@ function useDragSideBar() {
 
   const handleMouseUp = useCallback(() => {
     startDragWidth.current = config.sidebarWidth ?? 300;
-    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mousemove", handleMouseMove.current);
     window.removeEventListener("mouseup", handleMouseUp);
   }, [config.sidebarWidth, handleMouseMove]);
 

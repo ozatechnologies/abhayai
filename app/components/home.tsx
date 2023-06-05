@@ -21,7 +21,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import SideBar from "./sidebar";
+import sidebar from "./sidebar";
 
 import { useAppConfig } from "../store/config";
 

@@ -1,7 +1,5 @@
 import { useEffect, useRef } from "react";
-
 import styles from "./home.module.scss";
-
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
@@ -10,19 +8,9 @@ import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
-
 import Locale from "../locales";
-
 import { useAppConfig, useChatStore } from "../store";
-
-import {
-  MAX_SIDEBAR_WIDTH,
-  MIN_SIDEBAR_WIDTH,
-  NARROW_SIDEBAR_WIDTH,
-  Path,
-  REPO_URL,
-} from "../constant";
-
+import { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH, NARROW_SIDEBAR_WIDTH, Path, REPO_URL } from "../constant";
 import { Link, useNavigate } from "react-router-dom";
 import { useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
@@ -36,10 +24,10 @@ function useHotKey() {
   const chatStore = useChatStore();
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (e) => {
       if (e.metaKey || e.altKey || e.ctrlKey) {
         const n = chatStore.sessions.length;
-        const limit = (x: number) => (x + n) % n;
+        const limit = (x) => (x + n) % n;
         const i = chatStore.currentSessionIndex;
         if (e.key === "ArrowUp") {
           chatStore.selectSession(limit(i - 1));
@@ -51,18 +39,20 @@ function useHotKey() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  });
+  }, [chatStore]);
+
+  return null;
 }
 
 function useDragSideBar() {
-  const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
+  const limit = (x) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
   const config = useAppConfig();
   const startX = useRef(0);
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = useRef((e: MouseEvent) => {
+  const handleMouseMove = useRef((e) => {
     if (Date.now() < lastUpdateTime.current + 50) {
       return;
     }
@@ -78,7 +68,7 @@ function useDragSideBar() {
     window.removeEventListener("mouseup", handleMouseUp.current);
   });
 
-  const onDragMouseDown = (e: MouseEvent) => {
+  const onDragMouseDown = (e) => {
     startX.current = e.clientX;
 
     window.addEventListener("mousemove", handleMouseMove.current);
@@ -93,7 +83,10 @@ function useDragSideBar() {
       ? NARROW_SIDEBAR_WIDTH
       : limit(config.sidebarWidth ?? 300);
     const sideBarWidth = isMobileScreen ? "100vw" : `${barWidth}px`;
-    document.documentElement.style.setProperty("--sidebar-width", sideBarWidth);
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      sideBarWidth
+    );
   }, [config.sidebarWidth, isMobileScreen, shouldNarrow]);
 
   return {
@@ -102,7 +95,7 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(props: { className?: string }) {
+export function SideBar(props) {
   const chatStore = useChatStore();
 
   // drag side bar
@@ -112,33 +105,28 @@ export function SideBar(props: { className?: string }) {
 
   useHotKey();
 
-return (
-  <div
-    className={`${styles.sidebar} ${props.className} ${
-      shouldNarrow && styles["narrow-sidebar"]
-    }`}
-  >
-    {/* JSX content here */}
-  </div>
-);
-  >
-    {/* JSX content here */}
-    <div className={styles["sidebar-header"]}>
-      <div className={styles["sidebar-title"]}>AvanaAI</div>
-      <div className={styles["sidebar-sub-title"]}>
-        Avana Your Own bot!
+  return (
+    <div
+      className={`${styles.sidebar} ${props.className} ${
+        shouldNarrow && styles["narrow-sidebar"]
+      }`}
+    >
+      <div className={styles["sidebar-header"]}>
+        <div className={styles["sidebar-title"]}>AvanaAI</div>
+        <div className={styles["sidebar-sub-title"]}>Avana Your Own bot!</div>
+        <div className={styles["sidebar-logo"] + " no-dark"}>
+          <ChatGptIcon />
+        </div>
       </div>
-      <div className={styles["sidebar-logo"] + " no-dark"}>
-        <ChatGptIcon />
-      </div>
-    </div>
 
       <div className={styles["sidebar-header-bar"]}>
         <IconButton
           icon={<MaskIcon />}
           text={shouldNarrow ? undefined : Locale.Mask.Name}
           className={styles["sidebar-bar-button"]}
-          onClick={() => navigate(Path.NewChat, { state: { fromHome: true } })}
+          onClick={() =>
+            navigate(Path.NewChat, { state: { fromHome: true } })
+          }
           shadow
         />
         <IconButton
@@ -178,26 +166,27 @@ return (
               <IconButton icon={<SettingsIcon />} shadow />
             </Link>
           </div>
-        <div>
-          <IconButton
-            icon={<AddIcon />}
-            text={shouldNarrow ? undefined : Locale.Home.NewChat}
-            onClick={() => {
-              if (config.dontShowMaskSplashScreen) {
-                chatStore.newSession();
-                navigate(Path.Chat);
-              } else {
-                navigate(Path.NewChat);
-              }
-            }}
-            shadow
-          />
+          <div>
+            <IconButton
+              icon={<AddIcon />}
+              text={shouldNarrow ? undefined : Locale.Home.NewChat}
+              onClick={() => {
+                if (config.dontShowMaskSplashScreen) {
+                  chatStore.newSession();
+                  navigate(Path.Chat);
+                } else {
+                  navigate(Path.NewChat);
+                }
+              }}
+              shadow
+            />
+          </div>
         </div>
       </div>
 
       <div
         className={styles["sidebar-drag"]}
-        onMouseDown={(e) => onDragMouseDown(e as any)}
+        onMouseDown={(e) => onDragMouseDown(e)}
       ></div>
     </div>
   );

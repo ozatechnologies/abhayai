@@ -17,7 +17,6 @@ interface SideBarProps {
 
 function useDragSideBar(config: AppConfig) {
   const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
-
   const startX = useRef(0);
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());

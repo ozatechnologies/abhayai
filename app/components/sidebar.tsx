@@ -24,7 +24,7 @@ function useHotKey() {
   const chatStore = useChatStore();
 
   useEffect(() => {
-    const onKeyDown = (e: React.KeyboardEvent) => {
+  const onKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey || e.altKey || e.ctrlKey) {
         const n = chatStore.sessions.length;
         const limit = (x: number) => (x + n) % n;
@@ -37,10 +37,10 @@ function useHotKey() {
       }
     };
 
-    window.addEventListener("keydown", onKeyDown);
+     window.addEventListener("keydown", onKeyDown as EventListener);
 
   return () => {
-    window.removeEventListener("keydown", onKeyDown);
+    window.removeEventListener("keydown", onKeyDown as EventListener);
   };
 }, [chatStore]);
 

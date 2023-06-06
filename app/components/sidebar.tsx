@@ -71,7 +71,7 @@ const handleMouseUp = useRef(() => {
   window.removeEventListener("mouseup", handleMouseUp.current);
 });
 
-  const onDragMouseDown = (e) => {
+  const onDragMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     startX.current = e.clientX;
 
     window.addEventListener("mousemove", handleMouseMove.current);

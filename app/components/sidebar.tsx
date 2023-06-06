@@ -98,7 +98,7 @@ const handleMouseUp = useRef(() => {
   };
 }
 
-export function SideBar(props: SideBarProps) {
+export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();
 
   // drag side bar

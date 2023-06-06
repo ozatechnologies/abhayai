@@ -17,10 +17,10 @@ import dynamic from "next/dynamic";
 import { showToast } from "./ui-lib";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
-  loading: () => null,
+  loading: 
 });
 
-function useHotKey() {
+function useHotKey() 
   const chatStore = useChatStore();
 
   useEffect(() => {

@@ -38,8 +38,11 @@ function useHotKey() {
     };
 
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [chatStore]);
+
+  return () => {
+    window.removeEventListener("keydown", onKeyDown);
+  };
+}, [chatStore]);
 
   return null;
 }

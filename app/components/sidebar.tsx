@@ -55,21 +55,21 @@ function useDragSideBar() {
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = useRef((e) => {
-    if (Date.now() < lastUpdateTime.current + 50) {
-      return;
-    }
-    lastUpdateTime.current = Date.now();
-    const d = e.clientX - startX.current;
-    const nextWidth = limit(startDragWidth.current + d);
-    config.update((config) => (config.sidebarWidth = nextWidth));
-  });
+  const handleMouseMove = useRef((e: MouseEvent) => {
+  if (Date.now() < lastUpdateTime.current + 50) {
+    return;
+  }
+  lastUpdateTime.current = Date.now();
+  const d = e.clientX - startX.current;
+  const nextWidth = limit(startDragWidth.current + d);
+  config.update((config) => (config.sidebarWidth = nextWidth));
+});
 
-  const handleMouseUp = useRef(() => {
-    startDragWidth.current = config.sidebarWidth ?? 300;
-    window.removeEventListener("mousemove", handleMouseMove.current);
-    window.removeEventListener("mouseup", handleMouseUp.current);
-  });
+const handleMouseUp = useRef(() => {
+  startDragWidth.current = config.sidebarWidth ?? 300;
+  window.removeEventListener("mousemove", handleMouseMove.current);
+  window.removeEventListener("mouseup", handleMouseUp.current);
+});
 
   const onDragMouseDown = (e) => {
     startX.current = e.clientX;

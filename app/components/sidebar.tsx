@@ -16,8 +16,10 @@ import { useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
 import { showToast } from "./ui-lib";
 
-const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
-  loading: 
+const ChatList = dynamic(() => import("./chat-list").then((module) => module.ChatList), {
+
+  loading: () => null,
+
 });
 
 function useHotKey() 

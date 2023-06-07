@@ -57,7 +57,7 @@ function useDragSideBar() {
   const startDragWidth = useRef(config.sidebarWidth ?? 300);
   const lastUpdateTime = useRef(Date.now());
 
-  const handleMouseMove = useRef((e: MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (Date.now() < lastUpdateTime.current + 50) {
       return;
     }
@@ -65,19 +65,19 @@ function useDragSideBar() {
     const d = e.clientX - startX.current;
     const nextWidth = limit(startDragWidth.current + d);
     config.update((config) => (config.sidebarWidth = nextWidth));
-  });
+  };
 
-  const handleMouseUp = useRef(() => {
+  const handleMouseUp = () => {
     startDragWidth.current = config.sidebarWidth ?? 300;
-    window.removeEventListener("mousemove", handleMouseMove.current);
-    window.removeEventListener("mouseup", handleMouseUp.current);
-  });
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+  };
 
   const onDragMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     startX.current = e.clientX;
 
-    window.addEventListener("mousemove", handleMouseMove.current);
-    window.addEventListener("mouseup", handleMouseUp.current);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
   };
 
   const isMobileScreen = useMobileScreen();
@@ -100,6 +100,7 @@ function useDragSideBar() {
     shouldNarrow,
   };
 }
+
 
 export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();

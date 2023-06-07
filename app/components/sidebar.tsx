@@ -22,11 +22,11 @@ const ChatList = dynamic(() => import("./chat-list").then((module) => module.Cha
 
 });
 
-function useHotKey() 
+function useHotKey() {
   const chatStore = useChatStore();
 
   useEffect(() => {
-  const onKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey || e.altKey || e.ctrlKey) {
         const n = chatStore.sessions.length;
         const limit = (x: number) => (x + n) % n;
@@ -39,13 +39,13 @@ function useHotKey()
       }
     };
 
-     window.addEventListener("keydown", onKeyDown as EventListener);
+    window.addEventListener("keydown", onKeyDown as EventListener);
 
-  return () => {
-    window.removeEventListener("keydown", onKeyDown as EventListener);
-  };
-}, [chatStore]);
-
+    return () => {
+      window.removeEventListener("keydown", onKeyDown as EventListener);
+    };
+  }, [chatStore]);
+}
   return null;
 }
 

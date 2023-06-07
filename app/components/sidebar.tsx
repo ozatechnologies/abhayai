@@ -45,7 +45,7 @@ function useHotKey() {
       window.removeEventListener("keydown", onKeyDown as EventListener);
     };
   }, [chatStore]);
-}
+
   return null;
 }
 
@@ -100,7 +100,6 @@ function useDragSideBar() {
     shouldNarrow,
   };
 }
-
 
 export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();

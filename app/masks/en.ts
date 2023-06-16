@@ -18,11 +18,10 @@ export const EN_MASKS: BuiltinMask[] = [
       max_tokens: 2000,
       presence_penalty: 0,
       sendMemory: true,
-      historyMessageCount: 4,
-      compressMessageLengthThreshold: 1000,
+       historyMessageCount: 4,
+  compressMessageLengthThreshold: 1000,
     },
   };
-  -----------------
   {
   avatar: "\u2764",
   name: "Girlfriend",
@@ -47,7 +46,6 @@ const modelConfig = {
     lang: "en",
     builtin: true,
 };
-------------------------------
   {
     avatar: "1f916",
     name: "Prompt Improvement",

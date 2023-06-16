@@ -24,8 +24,7 @@ export const EN_MASKS: BuiltinMask[] = [
     lang: "en",
     builtin: true,
   },
-  {
- avatar: "\u2764",
+  avatar: "\u2764",
   name: "Girlfriend",
   context: [
     {
@@ -36,19 +35,19 @@ export const EN_MASKS: BuiltinMask[] = [
   ],
   date: "16-06-2023",
 };
-},
-modelConfig: {
-model: "gpt-4",
-temperature: 0.3,
-max_tokens: 2000,
-presence_penalty: 0,
-sendMemory: true,
-historyMessageCount: 4,
-compressMessageLengthThreshold: 1000,
-},
-lang: "en",
-builtin: true,
-},
+
+const modelConfig = {
+  model: "gpt-4",
+  temperature: 0.3,
+  max_tokens: 2000,
+  presence_penalty: 0,
+  sendMemory: true,
+  historyMessageCount: 4,
+  compressMessageLengthThreshold: 1000,
+};
+
+const lang = "en";
+const builtin = true;
   {
     avatar: "1f916",
     name: "Prompt Improvement",

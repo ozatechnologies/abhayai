@@ -24,7 +24,7 @@ export const EN_MASKS: BuiltinMask[] = [
     const obj = {
   lang: "en",
     builtin: true,
-  },
+  };
   avatar: "\u2764",
   name: "Girlfriend",
   context: [

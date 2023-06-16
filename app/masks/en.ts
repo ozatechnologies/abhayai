@@ -20,7 +20,7 @@ export const EN_MASKS: BuiltinMask[] = [
       sendMemory: true,
        historyMessageCount: 4,
   compressMessageLengthThreshold: 1000,
-    },
+    }
   };
   {
   avatar: "\u2764",

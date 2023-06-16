@@ -21,7 +21,8 @@ export const EN_MASKS: BuiltinMask[] = [
       historyMessageCount: 4,
       compressMessageLengthThreshold: 1000,
     },
-    lang: "en",
+    const obj = {
+  lang: "en",
     builtin: true,
   },
   avatar: "\u2764",
